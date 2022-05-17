@@ -8,7 +8,7 @@ using TaleWorlds.MountAndBlade;
 using MCM.Abstractions.Attributes.v2;
 using MCM.Abstractions.Attributes;
 
-namespace lessToothStickParry
+namespace PartialParry
 {
 
     internal sealed class Settings : AttributeGlobalSettings<Settings>
@@ -19,7 +19,7 @@ namespace lessToothStickParry
         private int _shieldBreakWeaponDefendMalus = 90;
         private int _twoHandedWeaponParryBonus = 150;
 
-        public override string Id => "LessToothStickParryMeleeHit";
+        public override string Id => "PartialParryMeleeHit";
         public override string DisplayName => $"Parry doesn't always block everything";
         public override string FolderName => "Parry Setting";
         public override string FormatType => "json2";
@@ -105,7 +105,7 @@ namespace lessToothStickParry
         protected override void OnSubModuleLoad()
         {
             Harmony.DEBUG = true;
-            Harmony harmony = new Harmony ("LessToothStickParryMeleeHit");
+            Harmony harmony = new Harmony ("PartialParry");
             harmony.PatchAll();
         }
 
@@ -118,7 +118,7 @@ namespace lessToothStickParry
 
     [HarmonyPatch(typeof (Mission))]
     [HarmonyPatch ("MeleeHitCallback")]
-    public class LessToothStickParryMeleeHitCallback
+    public class PartialParryMeleeHitCallback
     {
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
@@ -148,7 +148,7 @@ namespace lessToothStickParry
     }
 
     [HarmonyPatch(typeof(Mission), "ComputeBlowDamage")]
-    public class LessToothStickParryComputeBlowDamage
+    public class PartialParryComputeBlowDamage
     {
         static private bool IsWeaponTwoHanded(ref MissionWeapon weapon)
         {
