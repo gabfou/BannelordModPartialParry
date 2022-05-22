@@ -18,13 +18,14 @@ namespace PartialParry
         private bool _showLog = false;
         private int _shieldBreakWeaponDefendMalus = 90;
         private int _twoHandedWeaponParryBonus = 150;
+        private int _littleWeaponParryMalus = 75;
 
         public override string Id => "PartialParryMeleeHit";
         public override string DisplayName => $"Parry doesn't always block everything";
         public override string FolderName => "Parry Setting";
         public override string FormatType => "json2";
 
-        [SettingPropertyInteger("parry base magnitude", 0, 1000, RequireRestart = false, HintText = "by what base \"magnitude\" a hit is blocked")]
+        [SettingPropertyInteger("parry base magnitude", 0, 1000, RequireRestart = false, HintText = "how much base damage you can block before it starts crushing through parry")]
         [SettingPropertyGroup("General")]
         public int baseMagnitudeParried
         {
@@ -39,7 +40,7 @@ namespace PartialParry
             }
         }
 
-        [SettingPropertyInteger("perfect parry bonus in %", 0, 1000, RequireRestart = false, HintText = "what difference in percentage a perfect parry make")]
+        [SettingPropertyInteger("perfect parry bonus in %", 0, 1000, RequireRestart = false, HintText = "multiply the \"parry base magnitude\" by this percentage if you get a perfect parry (blocking right before you get hit)")]
         [SettingPropertyGroup("General")]
         public int perfectParryBonus
         {
@@ -69,7 +70,7 @@ namespace PartialParry
             }
         }
 
-        [SettingPropertyInteger("malus against shield break weapon %", 0, 100, RequireRestart = false, HintText = "a value of 100 mean no malus apply avalue of 0 mean everything go throught")]
+        [SettingPropertyInteger("malus against shield break weapon %", 0, 100, RequireRestart = false, HintText = "multiply the \"parry base magnitude\" by this percentage if you parry a hit from a weapon with shield damage bonus on shield")]
         [SettingPropertyGroup("General")]
         public int shieldBreakWeaponDefendMalus
         {
@@ -84,7 +85,22 @@ namespace PartialParry
             }
         }
 
-        [SettingPropertyInteger("two hand weapon bonus in %", 0, 1000, RequireRestart = false, HintText = "how much help (if any) having a two handed weapon make to parry strenght")]
+        [SettingPropertyInteger("malus when parrying with a dagger in %", 0, 100, RequireRestart = false, HintText = "multiply the \"parry base magnitude\" by this percentage if you parry with a dagger")]
+        [SettingPropertyGroup("General")]
+        public int littleWeaponParryMalus
+        {
+            get => _littleWeaponParryMalus;
+            set
+            {
+                if (_littleWeaponParryMalus != value)
+                {
+                    _littleWeaponParryMalus = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        [SettingPropertyInteger("two hand weapon bonus in %", 0, 1000, RequireRestart = false, HintText = " multiply the \"parry base magnitude\" by this percentage if you're using a two handed weapon")]
         [SettingPropertyGroup("General")]
         public int twoHandedWeaponParryBonus
         {
@@ -179,6 +195,8 @@ namespace PartialParry
                     baseParryMagnitude *= (float)GlobalSettings<Settings>.Instance.shieldBreakWeaponDefendMalus / 100f;
                 if (IsWeaponTwoHanded(ref attackInformation.VictimMainHandWeapon))
                     baseParryMagnitude *= (float)GlobalSettings<Settings>.Instance.twoHandedWeaponParryBonus / 100f;
+                if (attackInformation.VictimMainHandWeapon.CurrentUsageItem.WeaponClass == WeaponClass.Dagger)
+                    baseParryMagnitude *= (float)GlobalSettings<Settings>.Instance.littleWeaponParryMalus / 100f;
 
                 float oldMagnitude = magnitude;
                 magnitude -= baseParryMagnitude;
